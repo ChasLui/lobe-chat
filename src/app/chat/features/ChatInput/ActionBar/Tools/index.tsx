@@ -103,7 +103,7 @@ const Tools = memo(() => {
             e.domEvent.preventDefault();
           },
         }}
-        placement={'topLeft'}
+        placement={'topCenter'}
         trigger={['click']}
       >
         <ActionIcon icon={PencilRuler} placement={'bottom'} title={t('tools.title')} />

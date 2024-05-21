@@ -1,64 +1,75 @@
-import { DEFAULT_SETTINGS } from '@/const/settings';
-import type { GlobalSettings } from '@/types/settings';
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+
+import { SessionDefaultGroup } from '@/types/session';
+import { AsyncLocalStorage } from '@/utils/localStorage';
 
 export enum SidebarTabKey {
   Chat = 'chat',
   Market = 'market',
+  Me = 'me',
   Setting = 'settings',
 }
 
-export enum SettingsTabs {
-  Agent = 'agent',
-  Common = 'common',
-  LLM = 'llm',
+export enum ChatSettingsTabs {
+  Chat = 'chat',
+  Meta = 'meta',
+  Modal = 'modal',
+  Plugin = 'plugin',
+  Prompt = 'prompt',
   TTS = 'tts',
 }
 
-export interface Guide {
-  // Topic 引导
-  topic?: boolean;
+export enum SettingsTabs {
+  About = 'about',
+  Agent = 'agent',
+  Common = 'common',
+  LLM = 'llm',
+  Sync = 'sync',
+  TTS = 'tts',
 }
 
 export interface GlobalPreference {
-  guide?: Guide;
+  // which sessionGroup should expand
+  expandSessionGroupKeys: string[];
   inputHeight: number;
   mobileShowTopic?: boolean;
-  sessionGroupKeys: string[];
   sessionsWidth: number;
   showChatSideBar?: boolean;
   showSessionPanel?: boolean;
   showSystemRole?: boolean;
 }
 
-export interface GlobalState {
-  hasNewVersion?: boolean;
-  latestVersion?: string;
+export interface GlobalPreferenceState {
   /**
-   *  用户偏好的 UI 状态
-   *  @localStorage
+   * the user preference, which only store in local storage
    */
   preference: GlobalPreference;
-  /**
-   * @localStorage
-   * 用户设置
-   */
-  settings: GlobalSettings;
-  settingsTab: SettingsTabs;
+  preferenceStorage: AsyncLocalStorage<GlobalPreference>;
+}
+
+export interface GlobalCommonState {
+  hasNewVersion?: boolean;
+  isMobile?: boolean;
+  isPreferenceInit?: boolean;
+  latestVersion?: string;
+  router?: AppRouterInstance;
   sidebarKey: SidebarTabKey;
 }
 
+export type GlobalState = GlobalCommonState & GlobalPreferenceState;
+
 export const initialState: GlobalState = {
+  isMobile: false,
+  isPreferenceInit: false,
   preference: {
-    guide: {},
+    expandSessionGroupKeys: [SessionDefaultGroup.Pinned, SessionDefaultGroup.Default],
     inputHeight: 200,
     mobileShowTopic: false,
-    sessionGroupKeys: ['pinned', 'sessionList'],
     sessionsWidth: 320,
     showChatSideBar: true,
     showSessionPanel: true,
     showSystemRole: false,
   },
-  settings: DEFAULT_SETTINGS,
-  settingsTab: SettingsTabs.Common,
+  preferenceStorage: new AsyncLocalStorage('LOBE_GLOBAL_PREFERENCE'),
   sidebarKey: SidebarTabKey.Chat,
 };

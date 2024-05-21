@@ -3,8 +3,8 @@ import { produce } from 'immer';
 import useSWR, { SWRResponse } from 'swr';
 import type { StateCreator } from 'zustand/vanilla';
 
-import { getAgentList, getAgentManifest } from '@/services/agentMarket';
-import { globalHelpers } from '@/store/global/helpers';
+import { marketService } from '@/services/market';
+import { globalHelpers } from '@/store/user/helpers';
 import { AgentsMarketItem, LobeChatAgentsMarketIndex } from '@/types/market';
 
 import type { Store } from './store';
@@ -28,7 +28,7 @@ export const createMarketAction: StateCreator<
     set({ currentIdentifier: identifier });
   },
   deactivateAgent: () => {
-    set({ currentIdentifier: undefined }, false, 'deactivateAgent');
+    set({ currentIdentifier: '' }, false, 'deactivateAgent');
   },
   setSearchKeywords: (keywords) => {
     set({ searchKeywords: keywords });
@@ -47,7 +47,7 @@ export const createMarketAction: StateCreator<
   useFetchAgent: (identifier) =>
     useSWR<AgentsMarketItem>(
       [identifier, globalHelpers.getCurrentLanguage()],
-      ([id, locale]) => getAgentManifest(id, locale as string),
+      ([id, locale]) => marketService.getAgentManifest(id, locale as string),
       {
         onError: () => {
           get().deactivateAgent();
@@ -58,13 +58,18 @@ export const createMarketAction: StateCreator<
       },
     ),
   useFetchAgentList: () =>
-    useSWR<LobeChatAgentsMarketIndex>(globalHelpers.getCurrentLanguage(), getAgentList, {
-      onSuccess: (agentMarketIndex) => {
-        set(
-          { agentList: agentMarketIndex.agents, tagList: agentMarketIndex.tags },
-          false,
-          'useFetchAgentList',
-        );
+    useSWR<LobeChatAgentsMarketIndex>(
+      globalHelpers.getCurrentLanguage(),
+      marketService.getAgentList,
+      {
+        onSuccess: (agentMarketIndex) => {
+          set(
+            { agentList: agentMarketIndex.agents, tagList: agentMarketIndex.tags },
+            false,
+            'useFetchAgentList',
+          );
+        },
+        revalidateOnFocus: false,
       },
-    }),
+    ),
 });

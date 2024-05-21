@@ -1,9 +1,10 @@
-import { notification } from 'antd';
 import { t } from 'i18next';
 import { merge } from 'lodash-es';
 import { StateCreator } from 'zustand/vanilla';
 
+import { notification } from '@/components/AntdStaticMethods';
 import { pluginService } from '@/services/plugin';
+import { toolService } from '@/services/tool';
 import { pluginHelpers } from '@/store/tool/helpers';
 import { LobeToolCustomPlugin, PluginInstallError } from '@/types/tool/plugin';
 import { setNamespace } from '@/utils/storeDebug';
@@ -14,9 +15,6 @@ import { defaultCustomPlugin } from './initialState';
 
 const n = setNamespace('customPlugin');
 
-/**
- * 代理行为接口
- */
 export interface CustomPluginAction {
   installCustomPlugin: (value: LobeToolCustomPlugin) => Promise<void>;
   reinstallCustomPlugin: (id: string) => Promise<void>;
@@ -44,7 +42,10 @@ export const createCustomPluginSlice: StateCreator<
     const { refreshPlugins, updateInstallLoadingState } = get();
     try {
       updateInstallLoadingState(id, true);
-      const manifest = await pluginService.getPluginManifest(plugin.customParams?.manifestUrl);
+      const manifest = await toolService.getPluginManifest(
+        plugin.customParams?.manifestUrl,
+        plugin.customParams?.useProxy,
+      );
       updateInstallLoadingState(id, false);
 
       await pluginService.updatePluginManifest(id, manifest);
